@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <style>
+        body {
+            background-color: #F5F7F9;
+            font-family: 'Exo 2', sans-serif;
+            display: flex;
+            flex-direction: column;
+            width: 80%;
+            max-width: 1200px;
+            min-height: 100vh;
+            margin: 0 auto;
+            margin-top: 10px;
+            padding: 0 2%;
+            line-height: 1.4;
+            box-sizing: border-box;
+        }
+
+        #app {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            flex: 1;
+        }
+
+        /* Sistema de visibilidad */
+        .app-section {
+            display: none;
+            flex: 1;
+            min-height: 100vh;
+        }
+
+        .app-section.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main {
+            padding: 20px;
+            flex: 1;
+            min-height: auto;
+        }
+
+        .header {
+            width: 100%;
+            flex-shrink: 0;
+        }
+
+        .footer {
+            width: 100%;
+            flex-shrink: 0;
+            margin-top: auto;
+        }
+
+        /* Estilos para subsecciones */
+        .subsection {
+            display: none;
+        }
+
+        .subsection.active {
+            display: block;
+        }
+
+        /* Media queries para responsive */
+        @media screen and (max-width: 768px) {
+            body {
+                width: 95%;
+                padding: 0 2.5%;
+                margin-top: 5px;
+            }
+            
+            .main {
+                padding: 15px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            body {
+                width: 98%;
+                padding: 0 1%;
+                margin-top: 5px;
+            }
+            
+            .main {
+                padding: 10px;
+            }
+        }
+
+        @media screen and (min-width: 1201px) {
+            body {
+                width: 70%;
+            }
+        }
+
+        /* Para pantallas muy grandes */
+        @media screen and (min-width: 1600px) {
+            body {
+                width: 60%;
+                max-width: 1400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        
+        <!-- ===== VISTA LOGIN ===== -->
+        <div id="login-view" class="app-section active">
+            <div class="header">
+                <?!= include('login_header'); ?>
+            </div>
+            <div class="main">
+                <?!= include('login_main'); ?>
+            </div>
+            <div class="footer">
+                <?!= include('login_footer'); ?>
+            </div>
+        </div>
+        
+        <!-- ===== VISTA HOME ===== -->
+        <div id="home-view" class="app-section">
+            <div class="header">
+                <?!= include('home_header'); ?>
+            </div>
+            <div class="main">
+                <?!= include('home_main'); ?>
+                
+                <!-- Subsecciones de Home -->
+                <div id="vacations-subsection" class="subsection">
+                    <?!= include('vacations_main'); ?>
+                    
+                    <!-- Sub-subsecciones de Vacaciones -->
+                    <div id="add-vacation-content" class="subsection">
+                        <?!= include('add_vacation'); ?>
+                    </div>
+                    <div id="delete-vacation-content" class="subsection">
+                        <?!= include('delete_vacation'); ?>
+                    </div>
+                    <div id="calendar-vacation-content" class="subsection active">
+                        <?!= include('calendar_vacation'); ?>
+                    </div>
+                </div>
+                
+                <div id="tasks-subsection" class="subsection">
+                    <?!= include('task_main'); ?>
+                </div>
+                
+                <div id="ausencias-subsection" class="subsection">
+                    <?!= include('ausencias_main'); ?>
+                </div>
+            </div>
+            <div class="footer">
+                <?!= include('home_footer'); ?>
+            </div>
+        </div>
+
+    <!-- ===== SISTEMA DE NAVEGACIÓN ===== -->
+    <script>
+        const appState = {
+            currentView: 'login',
+            currentSubsection: null,
+            userRole: null
+        };
+
+        function showView(viewId, userRole = null) {
+            // Ocultar todas las vistas
+            document.querySelectorAll('.app-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Mostrar la vista solicitada
+            const targetView = document.getElementById(viewId);
+            if (targetView) {
+                targetView.classList.add('active');
+                appState.currentView = viewId;
+                appState.userRole = userRole;
+            }
+        }
+
+        function showSubsection(subsectionId) {
+            const prefix = appState.userRole === 'admin' ? 'admin-' : '';
+            const fullSubsectionId = prefix + subsectionId;
+            
+
+            const contextSelector = appState.userRole === 'admin' ? '#admin-view' : '#home-view';
+            document.querySelectorAll(`${contextSelector} .subsection`).forEach(subsection => {
+                subsection.classList.remove('active');
+            });
+            
+            // Mostrar la subsección solicitada
+            const targetSubsection = document.getElementById(fullSubsectionId);
+            if (targetSubsection) {
+                targetSubsection.classList.add('active');
+                appState.currentSubsection = subsectionId;
+            }
+        }
+
+        function showVacationSubsection(subsubsectionId) {
+            const prefix = appState.userRole === 'admin' ? 'admin-' : '';
+            const fullId = prefix + subsubsectionId + '-content';
+            
+            // Ocultar todas las sub-subsecciones de vacaciones
+            const vacationContext = appState.userRole === 'admin' ? '#admin-vacations-subsection' : '#vacations-subsection';
+            document.querySelectorAll(`${vacationContext} .subsection`).forEach(subsection => {
+                subsection.classList.remove('active');
+            });
+            
+            // Mostrar la sub-subsección solicitada
+            const targetSubsection = document.getElementById(fullId);
+            if (targetSubsection) {
+                targetSubsection.classList.add('active');
+                
+                // Ejecutar función de inicialización si existe
+                const initFunctionName = 'init' + subsubsectionId.split('-').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1)
+                ).join('');
+                
+                if (typeof window[initFunctionName] === 'function') {
+                    setTimeout(() => window[initFunctionName](), 100);
+                }
+            }
+        }
+
+        function intentarLogin() {
+            const email = document.getElementById("email").value;
+            const pass = document.getElementById("password").value;
+            const mensajeEl = document.getElementById("mensaje");
+            const botonEl = document.querySelector(".btn-acceder");
+            
+            if (!email || !pass) {
+                if (mensajeEl) {
+                    mensajeEl.className = "";
+                    mensajeEl.innerHTML = "Por favor, completa todos los campos";
+                }
+                return;
+            }
+            
+            if (mensajeEl) {
+                mensajeEl.className = "loading";
+                mensajeEl.innerHTML = '<div class="loading-spinner"></div>Procesando, espera un momento...';
+            }
+            
+            if (botonEl) {
+                botonEl.disabled = true;
+            }
+            
+            google.script.run
+              .withSuccessHandler(function(respuesta) {
+                  if (botonEl) {
+                      botonEl.disabled = false;
+                  }
+                  
+                  if (respuesta.estado === "OK") {
+                      if (mensajeEl) {
+                          mensajeEl.className = "loading";
+                          mensajeEl.innerHTML = '¡Login exitoso! Redirigiendo...';
+                      }
+                      
+                      const viewId = respuesta.rol === "admin" ? "admin-view" : "home-view";
+                      appState.userRole = respuesta.rol;
+                      appState.userId = respuesta.user_id;
+
+                      google.script.run
+                      .withSuccessHandler(urlLog => {
+                        fetch(urlLog)
+                          .then(res => res.json())
+                          .then(data => {
+                            google.script.run.registrarLog(appState.userId, data.ip);
+                          })
+                          .catch(err => console.error("Error obteniendo IP:", err));
+                      })
+                      .withFailureHandler(err => {
+                        console.error("Error obteniendo URL:", err);
+                      })
+                      .getUrlValidadLog();
+                      
+                      setTimeout(() => {
+                          showView(viewId, respuesta.rol);
+
+                          if (viewId === "home-view") {
+                              google.script.run
+                                .withSuccessHandler(function(response) {
+                                  try {
+                                    const parsed = JSON.parse(response);
+                                    if (parsed.ok && parsed.data) {
+                                      const userName = parsed.data.user_name || "Usuario";
+                                      const el = document.querySelector("#home-view #user_name");
+                                      if (el) el.textContent = userName;
+                                    }
+                                  } catch (err) {
+                                    console.error("Error parseando usuario:", err);
+                                  }
+                                })
+                                .backendAdapter("getUserById", appState.userId);
+                          }
+                      }, 1000);
+                  } else {
+
+                      if (mensajeEl) {
+                          mensajeEl.className = "";
+                          mensajeEl.innerHTML = "Usuario o contraseña incorrectos";
+                      }
+                  }
+              })
+              .withFailureHandler(function(error) {
+                  if (botonEl) {
+                      botonEl.disabled = false;
+                  }
+                  if (mensajeEl) {
+                      mensajeEl.className = "";
+                      mensajeEl.innerHTML = "Error de conexión. Intenta nuevamente";
+                  }
+                  console.error("Error en login:", error);
+              })
+              .validarLogin(email, pass);
+        }
+
+        function cargarSeccion(seccion) {
+            showSubsection(seccion + '-subsection');
+        }
+
+        function cargarParcial(parcialName, targetId, initCallback) {
+            const subsectionMap = {
+                'add_vacation.html': 'add-vacation',
+                'delete_vacation.html': 'delete-vacation', 
+                'calendar_vacation.html': 'calendar-vacation'
+            };
+            
+            const subsectionId = subsectionMap[parcialName];
+            if (subsectionId) {
+                showVacationSubsection(subsectionId);
+            }
+        }
+    </script>
+</body>
+</html>

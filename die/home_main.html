@@ -1,0 +1,251 @@
+<style>
+.home-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    max-width: 100%;
+    margin: 0 auto;
+    animation: fadeIn 0.8s ease-in;
+}
+
+.user-info {
+    text-align: center;
+    margin-bottom: 1rem;
+    animation: slideInLeft 0.8s ease-out;
+}
+
+.user-info span {
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    border-radius: 15px;
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 600;
+    font-size: clamp(0.8rem, 2vw, 0.9rem);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.role-admin {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+}
+
+.role-user {
+    background: linear-gradient(135deg, #468FFE, #070707);
+    color: white;
+}
+
+.user-info span:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(70, 143, 254, 0.2);
+}
+
+.secciones {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.section-btn {
+    padding: 0.8rem 1.5rem;
+    font-size: clamp(0.85rem, 2vw, 0.95rem);
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    min-width: 120px;
+    position: relative;
+    overflow: hidden;
+}
+
+.section-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(255,255,255,0.2), transparent);
+    transition: left 0.3s ease;
+}
+
+.section-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.section-btn:hover::before {
+    left: 100%;
+}
+
+.vacation-btn {
+    background: linear-gradient(135deg, #7af08a, #27ae60);
+    color: #070707;
+}
+
+.vacation-btn:hover {
+    background: linear-gradient(135deg, #6bd977, #229954);
+    box-shadow: 0 8px 25px rgba(122, 240, 138, 0.3);
+}
+
+.ausencia-btn {
+    background: linear-gradient(135deg, #468FFE, #070707);
+    color: white;
+}
+
+.ausencia-btn:hover {
+    background: linear-gradient(135deg, #3470d4, #2c3e50);
+    box-shadow: 0 8px 25px rgba(70, 143, 254, 0.3);
+}
+
+.admin-btn {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+}
+
+.admin-btn:hover {
+    background: linear-gradient(135deg, #d62c1a, #a93226);
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Responsividad */
+@media (max-width: 900px) {    
+    .secciones {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .section-btn {
+        width: 180px;
+        padding: 0.7rem 1.2rem;
+    }
+    
+    .user-info span {
+        font-size: 0.75rem;
+        padding: 0.5rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .section-btn {
+        width: 150px;
+        min-width: auto;
+        font-size: 0.8rem;
+    }
+}</style>
+
+<div class="home-main">      
+    <!-- Botones de secciones -->
+    <div class="secciones">
+        <button onclick="cargarSeccion('vacations')" class="section-btn vacation-btn">
+            📅 Vacaciones
+        </button>
+        <button onclick="cargarSeccion('tasks')" class="section-btn task-btn">
+            💻 Tareas del dia
+        </button>
+        <button onclick="cargarSeccion('ausencias')" class="section-btn ausencia-btn">
+            🏥 Ausencias
+        </button>
+    </div>
+</div>
+
+<script>
+// Función para cargar secciones (mantiene compatibilidad con el sistema anterior)
+function cargarSeccion(seccion) {
+    showSubsection(seccion + '-subsection');
+    
+    // Ejecutar función de inicialización específica si existe
+    setTimeout(() => {
+        if (seccion === 'vacations' && typeof initVacationMain === "function") {
+            initVacationMain();
+        }
+        if (seccion === 'tasks' && typeof initTasksMain === "function") {
+            initTasksMain();
+        }
+        if (seccion === 'ausencias' && typeof initAusenciasMain === "function") {
+            initAusenciasMain();
+        }
+    }, 100);
+}
+
+// Función que se ejecuta cuando se carga el home
+function initHome() {
+    // Mostrar información del usuario
+    updateUserInfo();
+}
+
+function updateUserInfo() {
+    const roleIndicator = document.getElementById("user-role-indicator");
+    const adminBtn = document.getElementById("admin-panel-btn");
+    
+    if (appState && appState.userRole) {
+        if (appState.userRole === "admin") {
+            roleIndicator.innerHTML = "👨‍💼 Administrador";
+            roleIndicator.className = "role-admin";
+            adminBtn.style.display = "inline-block";
+        } else {
+            roleIndicator.innerHTML = "👤 Usuario";
+            roleIndicator.className = "role-user";
+            adminBtn.style.display = "none";
+        }
+    }
+}
+
+// Función genérica para cargar parciales (mantiene compatibilidad)
+function cargarParcial(url, targetId, callbackInit) {
+    // Esta función ahora redirige al sistema de navegación
+    const parcialMap = {
+        'add_vacation.html': 'add-vacation',
+        'delete_vacation.html': 'delete-vacation',
+        'calendar_vacation.html': 'calendar-vacation'
+    };
+    
+    const subsectionId = parcialMap[url];
+    if (subsectionId) {
+        showVacationSubsection(subsectionId);
+    }
+}
+
+// Llamar a initHome cuando se carga esta sección
+if (typeof appState !== 'undefined' && appState.currentView === 'home-view') {
+    setTimeout(initHome, 100);
+}
+</script>

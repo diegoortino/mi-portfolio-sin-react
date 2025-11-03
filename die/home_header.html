@@ -1,0 +1,201 @@
+<style>
+.div_header {
+    background: linear-gradient(135deg, #468FFE 0%, #070707 100%);
+    padding: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(70, 143, 254, 0.3);
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.div_header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
+    pointer-events: none;
+}
+
+.tittle_header {
+    color: #FFFFFF;
+    font-family: 'Exo 2', sans-serif;
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-weight: 700;
+    margin: 0;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    animation: fadeInDown 0.8s ease forwards;
+}
+
+.user_greeting {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.greeting_icon {
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    animation: wave 2s ease-in-out infinite;
+}
+
+.user_name {
+    background: linear-gradient(45deg, #7af08a, #ffffff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+    text-transform: capitalize;
+}
+
+.loading_dots {
+    display: inline-block;
+    position: relative;
+}
+
+.loading_dots::after {
+    content: '...';
+    animation: dots 1.5s infinite;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes wave {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(20deg); }
+    75% { transform: rotate(-10deg); }
+}
+
+@keyframes dots {
+    0%, 20% { content: ''; }
+    40% { content: '.'; }
+    60% { content: '..'; }
+    80%, 100% { content: '...'; }
+}
+
+@media (max-width: 600px) {
+    .div_header {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .user_greeting {
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+}
+</style>
+
+<div class="div_header">
+    <h1 class="tittle_header">
+        <span class="user_greeting">
+            <span class="greeting_icon">👋</span>
+            <span id="greeting_text">
+                Buen día<span class="loading_dots"></span>
+            </span>
+        </span>
+    </h1>
+</div>
+
+<script>
+function initHeader() {
+    // Intentar cargar nombre inmediatamente
+    cargarNombreUsuario();
+    
+    // También intentar después de un pequeño delay por si appState se actualiza
+    setTimeout(cargarNombreUsuario, 500);
+}
+
+function obtenerSaludo() {
+    const hora = new Date().getHours();
+    
+    if (hora >= 5 && hora < 12) {
+        return "Buen día";
+    } else if (hora >= 12 && hora < 18) {
+        return "Buenas tardes";
+    } else {
+        return "Buenas noches";
+    }
+}
+
+function cargarNombreUsuario() {
+    const greetingElement = document.getElementById("greeting_text");
+    if (!greetingElement) return;
+    
+    // Verificar si tenemos userId en appState (del archivo principal)
+    if (!window.appState || !window.appState.userId) {
+        greetingElement.innerHTML = obtenerSaludo();
+        return;
+    }
+    
+    // Llamar al backend para obtener los datos del usuario
+    google.script.run
+    .withSuccessHandler(function(usuario) {
+        if (usuario && usuario.user_name) {
+            const saludo = obtenerSaludo();
+            greetingElement.innerHTML = `${saludo}, <span class="user_name">${usuario.user_name}</span>`;
+        } else {
+            greetingElement.innerHTML = obtenerSaludo();
+        }
+    })
+    .withFailureHandler(function(error) {
+        console.error("Error obteniendo usuario:", error);
+        greetingElement.innerHTML = obtenerSaludo();
+    })
+    .getUserById(window.appState.userId);
+}
+
+// Función para ser llamada desde el archivo principal después del login exitoso
+function actualizarHeaderConUsuario() {
+    // Esperar un poco para asegurar que appState esté actualizado
+    setTimeout(() => {
+        cargarNombreUsuario();
+    }, 100);
+}
+
+// Auto-inicializar cuando el componente se carga
+// Usar un observer para detectar cuando el elemento aparece
+function observarHeaderCarga() {
+    const observer = new MutationObserver((mutations) => {
+        const greetingElement = document.getElementById("greeting_text");
+        if (greetingElement) {
+            initHeader();
+            observer.disconnect(); // Dejar de observar una vez que se encuentra
+        }
+    });
+    
+    // Observar cambios en el DOM
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+    
+    // También intentar inmediatamente por si ya está cargado
+    if (document.getElementById("greeting_text")) {
+        initHeader();
+    }
+}
+
+// Inicializar el observer
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', observarHeaderCarga);
+} else {
+    observarHeaderCarga();
+}
+</script>

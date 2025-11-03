@@ -1,0 +1,148 @@
+<style>
+.task_container {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    color: #6c757d;
+}
+
+.task_card {
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    transition: box-shadow 0.2s ease;
+}
+
+.task_card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.task_name {
+    margin: 0 0 0.5rem 0;
+    color: #495057;
+}
+
+.task_link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.task_link:hover {
+    text-decoration: underline;
+}
+
+.error {
+    color: white;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    padding: 0.75rem;
+}
+
+.no-data {
+    color: #6c757d;
+    font-style: italic;
+    text-align: center;
+    padding: 1rem;
+}
+
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    font-style: italic;
+    color: #495057;
+}
+
+.loading-spinner {
+    width: 18px;
+    height: 18px;
+    border: 3px solid #ccc;
+    border-top: 3px solid #007bff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 600px) {
+    .task_container {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .task_card {
+        padding: 1rem;
+    }
+}
+</style>
+
+<div class="task_container">
+    <h3>Tareas de hoy</h3>
+    <div id="container_task_card"></div>
+</div>
+
+<script>
+function initTasksMain() {
+    cargarTareas();
+}
+
+function cargarTareas() {
+    const container = document.getElementById("container_task_card");
+    container.innerHTML = `
+        <div class="loading">
+            <div class="loading-spinner"></div>
+            <span>Cargando tareas...</span>
+        </div>
+    `;
+    
+    google.script.run
+    .withSuccessHandler(function(respuesta) {
+        container.innerHTML = "";
+
+        let parsed;
+        try {
+            parsed = JSON.parse(respuesta);
+        } catch (err) {
+            container.innerHTML = `<p class='error'>Respuesta inválida del servidor</p>`;
+            return;
+        }
+
+        if (!parsed.ok) {
+            container.innerHTML = `<p class='error'>Error: ${parsed.error}</p>`;
+            return;
+        }
+
+        const tasks = parsed.data;
+        
+        if (!tasks || tasks.length === 0) {
+            container.innerHTML = "<p class='no-data'>No hay tareas cargadas.</p>";
+            return;
+        }
+
+        tasks.forEach(task => {
+            const card = document.createElement("div");
+            card.className = "task_card";
+            card.innerHTML = `
+                <p class="task_name"><strong>${task.task_name}</strong></p>
+                <a href="${task.task_link}" class="task_link" target="_blank">Link a la tarea</a>
+            `;
+            container.appendChild(card);
+        });
+    })
+    .withFailureHandler(function(error) {
+        container.innerHTML = `<p class='error'>Error: ${error.message}</p>`;
+    })
+    .backendAdapter("getTareasUsuario", appState.userId);
+}
+</script>

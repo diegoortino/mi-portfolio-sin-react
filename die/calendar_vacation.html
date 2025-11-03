@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario de Vacaciones</title>
+    <style>
+
+        #calendar {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .calendar-header {
+            background: linear-gradient(135deg, #468FFE, #7af08a);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:active {
+            transform: translateY(0);
+        }
+
+        .current-month {
+            font-size: 28px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Filtro de equipos para supervisores/PMs */
+        .filter-section {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .filter-section h4 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .team-filter {
+            padding: 10px 15px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 25px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .team-filter:focus {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .team-filter option {
+            color: #333;
+            background: white;
+        }
+
+        .calendar-grid {
+            padding: 30px;
+        }
+
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            margin-bottom: 1px;
+            background: #e0e0e0;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .weekday {
+            background: #f8f9fa;
+            padding: 15px 8px;
+            text-align: center;
+            font-weight: 700;
+            color: #495057;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .weekday:first-child {
+            border-radius: 10px 0 0 0;
+        }
+
+        .weekday:last-child {
+            border-radius: 0 10px 0 0;
+        }
+
+        .days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #e0e0e0;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .day-cell {
+            background: white;
+            min-height: 120px;
+            padding: 8px;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .day-cell:hover {
+            background: #f8f9ff;
+            transform: scale(1.02);
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .day-number {
+            font-weight: 600;
+            color: #495057;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .day-cell.other-month .day-number {
+            color: #adb5bd;
+        }
+
+        .day-cell.today {
+            background: linear-gradient(135deg, #468FFE, #7af08a);
+            color: white;
+        }
+
+        .day-cell.today .day-number {
+            color: white;
+        }
+
+        .vacation-tag {
+            background: linear-gradient(135deg, #ff6b6b, #ffa500);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin: 1px 0;
+            display: block;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+
+        .vacation-tag:hover {
+            transform: scale(1.05);
+            z-index: 20;
+        }
+
+        .vacation-tag.multiple {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+            font-size: 18px;
+        }
+
+        .error {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+            font-size: 16px;
+        }
+
+        .no-data::before {
+            content: "📅";
+            display: block;
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .user-info-display {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .calendar-header {
+                padding: 20px 15px;
+            }
+
+            .current-month {
+                font-size: 22px;
+            }
+
+            .nav-btn {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+
+            .filter-section {
+                padding: 15px;
+            }
+
+            .team-filter {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+
+            .calendar-grid {
+                padding: 15px;
+            }
+
+            .day-cell {
+                min-height: 80px;
+                padding: 4px;
+            }
+
+            .day-number {
+                font-size: 14px;
+            }
+
+            .vacation-tag {
+                font-size: 10px;
+                padding: 1px 4px;
+            }
+
+            .weekday {
+                padding: 10px 4px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="calendar">
+        <div class="calendar-header">
+            <div class="calendar-nav">
+                <button class="nav-btn" onclick="navigateMonth(-1)">‹ Anterior</button>
+                <div class="current-month" id="currentMonth"></div>
+                <button class="nav-btn" onclick="navigateMonth(1)">Siguiente ›</button>
+            </div>
+            
+            <!-- Información del usuario -->
+            <div id="userInfoDisplay" class="user-info-display" style="display: none;"></div>
+            
+            <!-- Filtro de equipos (solo para supervisores/PMs) -->
+            <div id="filterSection" class="filter-section" style="display: none;">
+                <h4>Filtrar vacaciones por equipo:</h4>
+                <select id="teamFilter" class="team-filter" onchange="aplicarFiltroEquipo()">
+                    <option value="todos">Todos los equipos</option>
+                </select>
+            </div>
+        </div>
+        <div class="calendar-grid">
+            <div class="loading" id="loadingMessage">Cargando calendario...</div>
+        </div>
+    </div>
+
+    <script>
+        let currentDate = new Date();
+        let vacacionesData = [];
+        let equiposDisponibles = [];
+        let filtroEquipoActual = 'todos';
+
+        // Nombres de los meses en español
+        const monthNames = [
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        ];
+
+        // Días de la semana en español
+        const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+
+        function initCalendarVacation() {
+            mostrarInfoUsuario();
+            verificarPrivilegiosUsuario();
+            cargarCalendario();
+        }
+
+        function mostrarInfoUsuario() {
+            const userInfoEl = document.getElementById('userInfoDisplay');
+            if (appState && appState.userRole) {
+                const rolDisplay = appState.userRole === 'admin' ? 'Administrador' : 
+                                 appState.userRole === 'Supervisor' ? 'Supervisor' :
+                                 appState.userRole === 'PM' ? 'Project Manager' : 'Usuario';
+                userInfoEl.innerHTML = `👤 ${rolDisplay}`;
+                userInfoEl.style.display = 'block';
+            }
+        }
+
+        function verificarPrivilegiosUsuario() {
+            if (!appState || !appState.userId) return;
+
+            google.script.run
+                .withSuccessHandler(function(respuesta) {
+                    const parsed = JSON.parse(respuesta);
+                    if (parsed.ok && parsed.data) {
+                        mostrarFiltroEquipos();
+                        cargarEquiposDisponibles();
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    console.log("Usuario sin privilegios especiales");
+                })
+                .backendAdapter("esUsuarioPrivilegiado", appState.userId);
+        }
+
+        function mostrarFiltroEquipos() {
+            document.getElementById('filterSection').style.display = 'block';
+        }
+
+        function cargarEquiposDisponibles() {
+            google.script.run
+                .withSuccessHandler(function(respuesta) {
+                    const parsed = JSON.parse(respuesta);
+                    if (parsed.ok) {
+                        equiposDisponibles = parsed.data;
+                        actualizarSelectEquipos();
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    console.error("Error al cargar equipos:", error);
+                })
+                .backendAdapter("getEquiposDisponibles");
+        }
+
+        function actualizarSelectEquipos() {
+            const select = document.getElementById('teamFilter');
+            // Limpiar opciones existentes (excepto "Todos")
+            select.innerHTML = '<option value="todos">Todos los equipos</option>';
+            
+            equiposDisponibles.forEach(equipo => {
+                const option = document.createElement('option');
+                option.value = equipo;
+                option.textContent = equipo;
+                select.appendChild(option);
+            });
+        }
+
+        function aplicarFiltroEquipo() {
+            filtroEquipoActual = document.getElementById('teamFilter').value;
+            cargarCalendario();
+        }
+
+        function cargarCalendario() {
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run
+                    .withSuccessHandler(function(respuesta) {
+                        procesarRespuesta(respuesta);
+                    })
+                    .withFailureHandler(function(error) {
+                        mostrarError("Error al cargar las vacaciones: " + error);
+                    })
+                    .backendAdapter("getVacacionesFiltradas", appState.userId, filtroEquipoActual);
+            } else {
+                // Datos de prueba para testing
+                const mockData = '{"ok":true,"data":[{"user_name":"Martin Vega","user_team":"Desarrollo","vacation_init_date":"2025-08-04T03:00:00.000Z","vacation_end_date":"2025-08-10T03:00:00.000Z"},{"user_name":"Agustin Temporiti","user_team":"QA","vacation_init_date":"2025-09-01T03:00:00.000Z","vacation_end_date":"2025-09-07T03:00:00.000Z"}]}';
+                procesarRespuesta(mockData);
+            }
+        }
+
+        function procesarRespuesta(respuesta) {
+            try {
+                const parsed = JSON.parse(respuesta);
+                if (!parsed.ok) {
+                    mostrarError(parsed.error);
+                    return;
+                }
+
+                vacacionesData = parsed.data.map(v => ({
+                    ...v,
+                    vacation_init_date: new Date(v.vacation_init_date),
+                    vacation_end_date: new Date(v.vacation_end_date)
+                }));
+
+                renderCalendar();
+            } catch (error) {
+                mostrarError("Error al procesar los datos: " + error.message);
+            }
+        }
+
+        function mostrarError(mensaje) {
+            const calendarGrid = document.querySelector('.calendar-grid');
+            calendarGrid.innerHTML = `<div class="error">${mensaje}</div>`;
+        }
+
+        function renderCalendar() {
+            updateMonthDisplay();
+            const calendarGrid = document.querySelector('.calendar-grid');
+            
+            if (vacacionesData.length === 0) {
+                const filtroTexto = filtroEquipoActual === 'todos' ? 'registradas' : `del equipo ${filtroEquipoActual}`;
+                calendarGrid.innerHTML = `<div class="no-data">No hay vacaciones ${filtroTexto}</div>`;
+                return;
+            }
+
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            // Primer día del mes y último día
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+
+            // Primer día de la semana (0 = domingo)
+            const startWeekday = firstDay.getDay();
+
+            // Días del mes anterior para rellenar
+            const prevMonth = new Date(year, month, 0);
+            const daysInPrevMonth = prevMonth.getDate();
+
+            let html = '<div class="weekdays">';
+            dayNames.forEach(day => {
+                html += `<div class="weekday">${day}</div>`;
+            });
+            html += '</div><div class="days-grid">';
+
+            // Días del mes anterior
+            for (let i = startWeekday - 1; i >= 0; i--) {
+                const day = daysInPrevMonth - i;
+                html += `<div class="day-cell other-month">
+                    <div class="day-number">${day}</div>
+                </div>`;
+            }
+
+            // Días del mes actual
+            for (let day = 1; day <= daysInMonth; day++) {
+                const currentDay = new Date(year, month, day);
+                const isToday = isDateToday(currentDay);
+                const vacationsForDay = getVacationsForDay(currentDay);
+
+                html += `<div class="day-cell ${isToday ? 'today' : ''}">
+                    <div class="day-number">${day}</div>`;
+
+                vacationsForDay.forEach(vacation => {
+                    const isMultiple = vacationsForDay.length > 1;
+                    html += `<div class="vacation-tag ${isMultiple ? 'multiple' : ''}" 
+                                  title="${vacation.user_name} (${vacation.user_team})">
+                        ${vacation.user_name}
+                    </div>`;
+                });
+
+                html += '</div>';
+            }
+
+            // Días del siguiente mes para completar la grilla
+            const totalCells = Math.ceil((startWeekday + daysInMonth) / 7) * 7;
+            const remainingCells = totalCells - (startWeekday + daysInMonth);
+
+            for (let day = 1; day <= remainingCells; day++) {
+                html += `<div class="day-cell other-month">
+                    <div class="day-number">${day}</div>
+                </div>`;
+            }
+
+            html += '</div>';
+            calendarGrid.innerHTML = html;
+        }
+
+        function updateMonthDisplay() {
+            const monthDisplay = document.getElementById('currentMonth');
+            monthDisplay.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+        }
+
+        function navigateMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            renderCalendar();
+        }
+
+        function isDateToday(date) {
+            const today = new Date();
+            return date.getDate() === today.getDate() &&
+                   date.getMonth() === today.getMonth() &&
+                   date.getFullYear() === today.getFullYear();
+        }
+
+        function getVacationsForDay(date) {
+            return vacacionesData.filter(vacation => {
+                const startDate = new Date(vacation.vacation_init_date.getFullYear(), 
+                                         vacation.vacation_init_date.getMonth(), 
+                                         vacation.vacation_init_date.getDate());
+                const endDate = new Date(vacation.vacation_end_date.getFullYear(), 
+                                       vacation.vacation_end_date.getMonth(), 
+                                       vacation.vacation_end_date.getDate());
+                const checkDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                
+                return checkDate >= startDate && checkDate <= endDate;
+            });
+        }
+
+        // Inicializar el calendario cuando se carga la página
+        if (typeof google !== 'undefined' && google.script) {
+            // En Google Apps Script
+            initCalendarVacation();
+        } else {
+            // Para testing en navegador
+            document.addEventListener('DOMContentLoaded', initCalendarVacation);
+        }
+    </script>
+</body>
+</html>

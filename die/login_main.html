@@ -1,0 +1,238 @@
+<style>
+.div_main {
+    max-width: 350px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    text-align: center;
+    background-color: #FFFFFF;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    animation: fadeInUp 0.6s ease forwards;
+    margin-bottom: 1rem;
+    margin-top: 3rem;
+}
+
+.tittle_main {
+    margin-bottom: 1.2rem;
+    color: #070707;
+    font-family: 'Exo 2', sans-serif;
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    position: relative;
+    z-index: 1;
+}
+
+.tittle_main::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -3px;
+    width: 70%;
+    height: 6px;
+    background-color: #7af08a;
+    border-radius: 50px;
+    transform: translateX(-50%) scaleX(1.1) skewX(-15deg);
+    z-index: -1;
+    transition: transform 0.3s ease;
+}
+
+.div_main input {
+    width: 100%;
+    padding: 0.8rem;
+    margin: 0.6rem 0;
+    border: 2px solid #e1e5e9;
+    border-radius: 12px;
+    box-sizing: border-box;
+    font-size: clamp(0.9rem, 2vw, 1rem);
+    font-family: 'Exo 2', sans-serif;
+    transition: all 0.3s ease;
+    background-color: #F5F7F9;
+}
+
+.div_main input:focus {
+    outline: none;
+    border-color: #468FFE;
+    background-color: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(70, 143, 254, 0.1);
+    transform: translateY(-2px);
+}
+
+.btn-acceder {
+    width: 100%;
+    padding: 0.8rem;
+    background: linear-gradient(135deg, #468FFE, #070707);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: clamp(0.9rem, 2vw, 1rem);
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(70, 143, 254, 0.3);
+}
+
+.btn-acceder:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-acceder::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(255,255,255,0.2), transparent);
+    transition: left 0.3s ease;
+}
+
+.btn-acceder:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(70, 143, 254, 0.4);
+}
+
+.btn-acceder:hover:not(:disabled)::before {
+    left: 100%;
+}
+
+.btn-acceder:active:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+#mensaje {
+    color: #e74c3c;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.85rem;
+    margin-top: 0.8rem;
+    padding: 0.4rem;
+    border-radius: 6px;
+    background-color: rgba(231, 76, 60, 0.1);
+    border-left: 3px solid #e74c3c;
+    min-height: 1.2rem;
+}
+
+#mensaje.loading {
+    color: #468FFE;
+    background-color: rgba(70, 143, 254, 0.1);
+    border-left: 3px solid #468FFE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.loading-spinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid #e3e3e3;
+    border-top: 2px solid #468FFE;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsividad */
+@media (max-width: 900px) {
+    .div_main {
+        padding: 1rem;
+        margin: 0 0.5rem;
+        max-width: 300px;
+    }
+    
+    .div_main input,
+    .btn-acceder {
+        padding: 0.7rem;
+        font-size: 0.85rem;
+    }
+    
+    .tittle_main {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+}
+</style>
+
+<div class="div_main">
+    <h1 class="tittle_main">Login</h1>
+    <input type="email" id="email" placeholder="Correo">
+    <input type="password" id="password" placeholder="Contraseña">
+    <button class="btn-acceder" onclick="intentarLogin()">Acceder</button>
+    <p id="mensaje"></p>
+</div>
+
+<script>
+function intentarLogin() {
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
+    const mensajeEl = document.getElementById("mensaje");
+    const botonEl = document.querySelector(".btn-acceder");
+    
+    // Validar que los campos no estén vacíos
+    if (!email || !pass) {
+        mensajeEl.classList.remove("loading");
+        mensajeEl.innerHTML = "Por favor, completa todos los campos";
+        return;
+    }
+    
+    // Mostrar mensaje de carga
+    mensajeEl.classList.add("loading");
+    mensajeEl.innerHTML = '<div class="loading-spinner"></div>Procesando, espera un momento...';
+    
+    // Deshabilitar el botón
+    botonEl.disabled = true;
+    
+    google.script.run
+      .withSuccessHandler(function(respuesta) {
+          // Rehabilitar el botón
+          botonEl.disabled = false;
+          
+          if (respuesta.estado === "OK") {
+              // Mensaje de éxito
+              mensajeEl.classList.add("loading");
+              mensajeEl.innerHTML = '¡Login exitoso! Redirigiendo...';
+              
+              const viewId = respuesta.rol === "admin" ? "admin-view" : "home-view";
+              appState.userRole = respuesta.rol;
+              appState.userId = respuesta.user_id;
+              
+              // Pequeño delay para mostrar el mensaje de éxito
+              setTimeout(() => {
+                  showView(viewId, respuesta.rol);
+              }, 1000);
+          } else {
+              // Mensaje de error
+              mensajeEl.classList.remove("loading");
+              mensajeEl.innerHTML = "Usuario o contraseña incorrectos";
+          }
+      })
+      .withFailureHandler(function(error) {
+          // Rehabilitar el botón en caso de error
+          botonEl.disabled = false;
+          mensajeEl.classList.remove("loading");
+          mensajeEl.innerHTML = "Error de conexión. Intenta nuevamente";
+          console.error("Error en login:", error);
+      })
+      .validarLogin(email, pass);
+}
+</script>

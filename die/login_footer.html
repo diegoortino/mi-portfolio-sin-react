@@ -1,0 +1,33 @@
+<style>
+  .div_footer {
+    background: linear-gradient(135deg, #F5F7F9, #e1e5e9);
+    padding: 0.8rem;
+    text-align: center;
+    border-radius: 15px;
+    margin-top: 1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    animation: fadeInUp 0.6s ease forwards;
+  }
+  
+  .div_footer small {
+    color: #070707;
+    font-family: 'Exo 2', sans-serif;
+    font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  @keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+  }
+</style>
+<div class="div_footer">
+  <small>Grupo Kelsoft - Proyecto Matcheador</small>
+</div>

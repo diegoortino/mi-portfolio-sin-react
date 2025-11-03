@@ -1,0 +1,314 @@
+<style>
+.add-vacation {
+    padding: 1.5rem;
+    background-color: #FFFFFF;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    max-width: 450px;
+    margin: 0 auto;
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.add-vacation h3 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #070707;
+    font-family: 'Exo 2', sans-serif;
+    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    position: relative;
+    z-index: 1;
+    text-align: center;
+}
+
+.add-vacation h3::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -3px;
+    width: 60%;
+    height: 6px;
+    background-color: #7af08a;
+    border-radius: 50px;
+    transform: translateX(-50%) scaleX(1.1) skewX(-15deg);
+    z-index: -1;
+    transition: transform 0.3s ease;
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 600;
+    color: #070707;
+    font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 2px solid #e1e5e9;
+    border-radius: 12px;
+    font-size: clamp(0.85rem, 2vw, 0.95rem);
+    font-family: 'Exo 2', sans-serif;
+    box-sizing: border-box;
+    background-color: #F5F7F9;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #468FFE;
+    background-color: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(70, 143, 254, 0.1);
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #468FFE, #070707);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: clamp(0.9rem, 2vw, 1rem);
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 600;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(70, 143, 254, 0.3);
+    width: 100%;
+}
+
+.btn-primary:disabled {
+    background: linear-gradient(135deg, #ccc, #999);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(255,255,255,0.2), transparent);
+    transition: left 0.3s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(70, 143, 254, 0.4);
+}
+
+.btn-primary:hover:not(:disabled)::before {
+    left: 100%;
+}
+
+#mensaje_vac {
+    margin-top: 1rem;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.90rem;
+    font-weight: 600;
+    padding: 0.6rem;
+    border-radius: 8px;
+    text-align: center;
+    transition: all 0.3s ease;
+    min-height: 1.2rem;
+}
+
+#mensaje_vac.error {
+    color: white !important;
+    background-color: rgba(231, 76, 60, 0.1);
+    border-left: 3px solid #e74c3c;
+}
+
+#mensaje_vac.success {
+    color: black !important;
+    background-color: rgba(39, 174, 96, 0.1);
+    border-left: 3px solid #27ae60;
+}
+
+.vacation-info {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+    color: #6c757d;
+    line-height: 1.4;
+}
+
+.vacation-info h4 {
+    margin: 0 0 0.5rem 0;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.vacation-info ul {
+    margin: 0;
+    padding-left: 1.2rem;
+}
+
+.vacation-info li {
+    margin-bottom: 0.3rem;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 900px) {
+    .add-vacation {
+        padding: 1rem;
+        max-width: 350px;
+    }
+    
+    .form-group input,
+    .btn-primary {
+        padding: 0.7rem;
+        font-size: 0.85rem;
+    }
+    
+    .vacation-info {
+        font-size: 0.75rem;
+    }
+}
+</style>
+
+<div class="add-vacation">
+    <h3>Solicitar Vacación</h3>
+    
+    <div class="vacation-info">
+        <h4>📋 Reglas para solicitar vacaciones:</h4>
+        <ul>
+            <li><strong>Inicio:</strong> El bloque solo puede iniciar los días lunes</li>
+            <li><strong>Duración:</strong> En caso de cumplir con la antiguedad en el proyecto, se pueden solicitar dos bloques de 7 días (1 semana) o un bloque de 14 días (2 semanas)</li>
+            <li><strong>Meses habilitados 2025:</strong> Octubre y Diciembre</li>
+            <li><strong>Meses habilitados 2026:</strong> Ene, Feb, Mar, Abr, Jun, Jul, Ago</li>
+            <li><strong>Restricción:</strong> No puede coincidir con compañeros del mismo equipo</li>
+        </ul>
+    </div>
+    
+    <div class="form-group">
+        <label for="vacation_init_date">Fecha de inicio (debe ser lunes):</label>
+        <input type="date" id="vacation_init_date">
+    </div>
+    
+    <div class="form-group">
+        <label for="vacation_end_date">Fecha de fin (debe ser domingo):</label>
+        <input type="date" id="vacation_end_date">
+    </div>
+    
+    <button onclick="agregarVacacion()" class="btn-primary" id="btnAgregar">
+        Solicitar Vacación
+    </button>
+    
+    <div id="mensaje_vac"></div>
+</div>
+
+<script>
+function initAddVacation() {
+    // Limpiar mensajes y campos
+    const mensajeEl = document.getElementById("mensaje_vac");
+    if (mensajeEl) {
+        mensajeEl.innerText = "";
+        mensajeEl.className = "";
+    }
+    
+    document.getElementById("vacation_init_date").value = "";
+    document.getElementById("vacation_end_date").value = "";
+    
+    // Habilitar botón
+    document.getElementById("btnAgregar").disabled = false;
+}
+
+function mostrarMensaje(mensaje, tipo) {
+    const mensajeEl = document.getElementById("mensaje_vac");
+    mensajeEl.innerText = mensaje;
+    mensajeEl.className = tipo;
+}
+
+function deshabilitarBoton(deshabilitar = true) {
+    const btn = document.getElementById("btnAgregar");
+    btn.disabled = deshabilitar;
+    btn.innerText = deshabilitar ? "Procesando..." : "Solicitar Vacación";
+}
+
+function agregarVacacion() {
+    const initDate = document.getElementById("vacation_init_date").value;
+    const endDate = document.getElementById("vacation_end_date").value;
+    
+    // Validación básica en frontend
+    if (!initDate || !endDate) {
+        mostrarMensaje("Por favor, completa ambas fechas", "error");
+        return;
+    }
+    
+    if (new Date(endDate) <= new Date(initDate)) {
+        mostrarMensaje("La fecha de fin debe ser posterior a la fecha de inicio", "error");
+        return;
+    }
+    
+    // Deshabilitar botón mientras se procesa
+    deshabilitarBoton(true);
+    mostrarMensaje("Validando solicitud...", "");
+    
+    google.script.run
+    .withSuccessHandler(function(respuesta) {
+        deshabilitarBoton(false);
+        
+        if (respuesta === "OK") {
+            mostrarMensaje("¡Vacación agregada correctamente!", "success");
+            document.getElementById("vacation_init_date").value = "";
+            document.getElementById("vacation_end_date").value = "";
+            
+            // Recargar calendario si existe
+            setTimeout(() => {
+                if (typeof cargarCalendario === 'function') {
+                    cargarCalendario();
+                }
+            }, 500);
+        } else {
+            // El backend ya retorna el mensaje de error específico
+            mostrarMensaje(respuesta, "error");
+        }
+    })
+    .withFailureHandler(function(error) {
+        deshabilitarBoton(false);
+        mostrarMensaje("Error de conexión: " + error.message, "error");
+    })
+    .agregarVacacionBackend(appState.userId, initDate, endDate);
+}
+
+// Helper para calcular el domingo correspondiente a un lunes
+document.getElementById("vacation_init_date").addEventListener("change", function() {
+    const fechaInicio = new Date(this.value);
+    if (fechaInicio && fechaInicio.getDay() === 0) { // Si es lunes
+        // Sugerir fecha de fin (domingo de esa semana)
+        const fechaFin = new Date(fechaInicio);
+        fechaFin.setDate(fechaInicio.getDate() + 6); // +6 días para llegar al domingo
+        
+        document.getElementById("vacation_end_date").value = fechaFin.toISOString().split('T')[0];
+        mostrarMensaje("Sugerencia: bloque de 7 días hasta el domingo. También puedes elegir 14 días (2 semanas).", "");
+    } else if (fechaInicio) {
+        mostrarMensaje("Recuerda que las vacaciones deben comenzar en lunes", "error");
+    }
+});
+</script>

@@ -1,0 +1,272 @@
+<style>
+.delete-vacation {
+    padding: 1.5rem;
+    background-color: #FFFFFF;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    animation: fadeInUp 0.6s ease forwards;
+    min-height: 300px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.delete-vacation h3 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #070707;
+    font-family: 'Exo 2', sans-serif;
+    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    position: relative;
+    z-index: 1;
+    text-align: center;
+}
+
+.delete-vacation h3::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -3px;
+    width: 60%;
+    height: 6px;
+    background-color: #7af08a;
+    border-radius: 50px;
+    transform: translateX(-50%) scaleX(1.1) skewX(-15deg);
+    z-index: -1;
+    transition: transform 0.3s ease;
+}
+
+.vacation-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #F5F7F9;
+    border: none;
+    padding: 1rem;
+    margin: 0.8rem 0;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.4s ease forwards;
+}
+
+.vacation-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(70, 143, 254, 0.15);
+    background-color: #FFFFFF;
+}
+
+.vacation-info {
+    flex: 1;
+}
+
+.vacation-dates {
+    margin: 0 0 0.3rem 0;
+    font-family: 'Exo 2', sans-serif;
+    font-size: clamp(0.9rem, 2vw, 1rem);
+    font-weight: 600;
+    color: #070707;
+}
+
+.vacation-duration {
+    margin: 0;
+    font-family: 'Exo 2', sans-serif;
+    font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+    color: #468FFE;
+    font-weight: 500;
+}
+
+.btn-delete {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(231, 76, 60, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-delete::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(255,255,255,0.2), transparent);
+    transition: left 0.3s ease;
+}
+
+.btn-delete:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(231, 76, 60, 0.4);
+}
+
+.btn-delete:hover::before {
+    left: 100%;
+}
+
+.no-data {
+    text-align: center;
+    color: #070707;
+    font-family: 'Exo 2', sans-serif;
+    font-size: clamp(0.9rem, 2vw, 1rem);
+    padding: 2rem;
+    background-color: #F5F7F9;
+    border-radius: 12px;
+    margin: 1rem 0;
+}
+
+.error {
+    color: #e74c3c;
+    background-color: rgba(231, 76, 60, 0.1);
+    border: 2px solid rgba(231, 76, 60, 0.2);
+    text-align: center;
+    padding: 1rem;
+    border-radius: 12px;
+    font-family: 'Exo 2', sans-serif;
+    font-size: clamp(0.85rem, 1.5vw, 0.95rem);
+    margin: 1rem 0;
+}
+
+#vacation_list p {
+    text-align: center;
+    color: #468FFE;
+    font-family: 'Exo 2', sans-serif;
+    margin: 1.5rem 0;
+    font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Scrollbar personalizado */
+.delete-vacation::-webkit-scrollbar {
+    width: 6px;
+}
+
+.delete-vacation::-webkit-scrollbar-track {
+    background: #F5F7F9;
+    border-radius: 3px;
+}
+
+.delete-vacation::-webkit-scrollbar-thumb {
+    background: #468FFE;
+    border-radius: 3px;
+}
+
+@media (max-width: 900px) {
+    .vacation-card {
+        flex-direction: column;
+        gap: 0.8rem;
+        text-align: center;
+    }
+    
+    .btn-delete {
+        width: 100%;
+        padding: 0.8rem;
+    }
+    
+    .delete-vacation {
+        padding: 1rem;
+        max-height: 400px;
+    }
+}
+</style>
+
+<div class="delete-vacation">
+    <h3>Eliminar Vacación</h3>
+    <div id="vacation_list"></div>
+</div>
+
+<script>
+function initDeleteVacation() {
+    cargarVacaciones();
+}
+
+function cargarVacaciones() {
+    const container = document.getElementById("vacation_list");
+    container.innerHTML = "<p>Cargando vacaciones...</p>";
+    
+    google.script.run
+    .withSuccessHandler(function(respuesta) {
+        container.innerHTML = "";
+        
+        if (respuesta.estado !== "OK") {
+            container.innerHTML = `<p class='error'>Error: ${respuesta.mensaje}</p>`;
+            return;
+        }
+
+        const data = respuesta.data;
+        if (data.vacaciones.length === 0) {
+            container.innerHTML = "<p class='no-data'>No hay vacaciones registradas.</p>";
+            return;
+        }
+
+        // Los datos ya vienen procesados del backend
+        data.vacaciones.forEach(v => {
+            const card = document.createElement("div");
+            card.className = "vacation-card";
+            card.innerHTML = `
+                <div class="vacation-info">
+                    <p class="vacation-dates"><strong>📅 ${v.vacation_init_date_formatted} → ${v.vacation_end_date_formatted}</strong></p>
+                    <p class="vacation-duration">Duración: ${v.duration_days} día${v.duration_days > 1 ? 's' : ''}</p>
+                </div>
+                <button onclick="eliminarVacacion('${v.vacation_id}')" class="btn-delete">
+                    🗑️ Eliminar
+                </button>
+            `;
+            container.appendChild(card);
+        });
+        
+        // Mostrar resumen
+        const resumen = data.resumen;
+        const resumenHTML = `
+            <div class="resumen-vacaciones">
+                <p>Días usados: ${resumen.dias_usados}/14 (${resumen.porcentaje_usado}%)</p>
+                <p>Días disponibles: ${resumen.dias_disponibles}</p>
+            </div>
+        `;
+        container.insertAdjacentHTML('afterbegin', resumenHTML);
+        
+    })
+    .withFailureHandler(function(error) {
+        container.innerHTML = `<p class='error'>Error: ${error.message}</p>`;
+    })
+    .backendAdapter("getResumenVacacionesUsuario", appState.userId);
+}
+
+function eliminarVacacion(vacId) {
+    if (!confirm("¿Estás seguro de que quieres eliminar esta vacación?")) {
+        return;
+    }
+    
+    google.script.run
+    .withSuccessHandler(function() {
+        cargarVacaciones();
+        setTimeout(() => {
+            if (typeof cargarCalendario === 'function') {
+                cargarCalendario();
+            }
+        }, 500);
+    })
+    .withFailureHandler(function(error) {
+        alert("Error al eliminar vacación: " + error.message);
+    })
+    .eliminarVacacionBackend(vacId);   // 🔹 Hay que crear esta función en backend
+}
+</script>
